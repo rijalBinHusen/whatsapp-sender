@@ -4,21 +4,21 @@ chrome.runtime.onInstalled.addListener(() => {
 });
 
 // Tab güncellendiğinde content script'i yeniden yükle
-chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-    if (changeInfo.status === 'complete' && tab.url?.includes('web.whatsapp.com')) {
-        console.log('WhatsApp Web page loaded, reloading content script...');
+// chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+//     if (changeInfo.status === 'complete' && tab.url?.includes('web.whatsapp.com')) {
+//         console.log('WhatsApp Web page loaded, reloading content script...');
         
-        // Content script'i yeniden yükle
-        chrome.scripting.executeScript({
-            target: { tabId: tabId },
-            files: ['content.js']
-        }).then(() => {
-            console.log('Content script loaded successfully');
-        }).catch((err) => {
-            console.error('Error loading content script:', err);
-        });
-    }
-});
+//         // Content script'i yeniden yükle
+//         chrome.scripting.executeScript({
+//             target: { tabId: tabId },
+//             // files: ['content.js']
+//         }).then(() => {
+//             console.log('Content script loaded successfully');
+//         }).catch((err) => {
+//             console.error('Error loading content script:', err);
+//         });
+//     }
+// });
 
 // Content script'ten gelen mesajları dinle
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
