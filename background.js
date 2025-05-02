@@ -20,6 +20,7 @@ chrome.runtime.onInstalled.addListener(() => {
 //     }
 // });
 
+// Listen to messages from content script
 // Content script'ten gelen mesajları dinle
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     console.log('Background script received message:', request);

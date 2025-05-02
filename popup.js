@@ -3,10 +3,11 @@ console.log('Popup script loaded');
 document.addEventListener('DOMContentLoaded', function() {
     const messageInput = document.getElementById('message');
     const countInput = document.getElementById('count');
+    const contactInput = document.getElementById('contact');
     const sendButton = document.getElementById('sendButton');
     const statusDiv = document.getElementById('status');
 
-    if (!sendButton || !messageInput || !countInput || !statusDiv) {
+    if (!sendButton || !messageInput || !countInput || !statusDiv || !contactInput) {
         console.error('Required elements not found!');
         return;
     }
@@ -24,8 +25,14 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     sendButton.addEventListener('click', async function() {
+        const contact = contactInput.value;
         const message = messageInput.value.trim();
         const count = parseInt(countInput.value);
+
+        if (!contact) {
+            statusDiv.textContent = 'Please type a contact';
+            return;
+        }
 
         if (!message) {
             statusDiv.textContent = 'Please enter a message';
@@ -38,6 +45,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         sendButton.disabled = true;
+        contactInput.disabled = true;
         messageInput.disabled = true;
         countInput.disabled = true;
         statusDiv.textContent = 'Starting message sending...';
@@ -52,17 +60,20 @@ document.addEventListener('DOMContentLoaded', function() {
             chrome.tabs.sendMessage(tabs[0].id, {
                 action: "sendMessages",
                 message: message,
-                count: count
+                count: count,
+                contact: contact
             }, function(response) {
                 if (chrome.runtime.lastError) {
                     statusDiv.textContent = 'Error: Could not connect to WhatsApp Web';
                     console.error(chrome.runtime.lastError);
                     sendButton.disabled = false;
+                    contactInput.disabled = false;
                     messageInput.disabled = false;
                     countInput.disabled = false;
                 } else if (response?.status === "error") {
                     statusDiv.textContent = 'Error: ' + response.message;
                     sendButton.disabled = false;
+                    contactInput.disabled = false;
                     messageInput.disabled = false;
                     countInput.disabled = false;
                 }
@@ -71,6 +82,7 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Error:', error);
             statusDiv.textContent = 'An error occurred';
             sendButton.disabled = false;
+            contactInput.disabled = false;
             messageInput.disabled = false;
             countInput.disabled = false;
         }

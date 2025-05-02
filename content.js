@@ -5,7 +5,7 @@ chrome.runtime.sendMessage({ action: "contentScriptLoaded" });
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     console.log('Content script received message:', request);
 
-    const whatsAppOperations = new WhatsAppUtils001();
+    const whatsAppOperations = new WhatsAppUtils();
     const isSendingInProgress = whatsAppOperations.isSendingInProgress;
 
     if (request.action === "sendMessages") {
@@ -18,12 +18,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         }
 
         // sendMessage(request.message, request.count, sendResponse);
-        whatsAppOperations.sendMessage(request.message, request.count, sendResponse);
+        whatsAppOperations.sendMessage(request.message, request.count, request.contact, sendResponse);
         return true;
     }
 });
 
-class WhatsAppUtils001 {
+class WhatsAppUtils {
     
     isSendingInProgress = false;
 
@@ -53,6 +53,29 @@ class WhatsAppUtils001 {
         }
     
         return element;
+    }
+
+    
+    simulateMouseEvents(element, eventName) {
+        const mouseEvent = document.
+            createEvent('MouseEvents');
+        mouseEvent.
+            initEvent(eventName, true, true);
+        element.
+            dispatchEvent(mouseEvent);
+    }
+
+    async selectChat(contactName) {
+        try {
+            let element = await this.waitForElementAndFind('[title="' + contactName + '"]');
+            if (!element) throw new Error("Contact not found");
+            this.simulateMouseEvents(element, 'mousedown');
+            return true;
+
+        } catch( error) {
+            console.error('Error select chat:', error);
+            return false;
+        }
     }
 
     writeMessage(element, text) {
@@ -100,7 +123,7 @@ class WhatsAppUtils001 {
         }
     }
     
-    async sendMessage(message, repeatCount, sendResponse) {
+    async sendMessage(message, repeatCount, contactName, sendResponse) {
         if (this.isSendingInProgress) {
             sendResponse({ 
                 status: "error", 
@@ -112,6 +135,17 @@ class WhatsAppUtils001 {
         let successCount = 0;
         let failCount = 0;
         this.isSendingInProgress = true;
+
+        const isChatSelected = await this.selectChat(contactName);
+        if(!isChatSelected) {
+            
+            chrome.runtime.sendMessage({
+                status: "complete",
+                success: successCount,
+                failed: failCount
+            });
+            return;
+        }
     
         for (let i = 0; i < repeatCount && this.isSendingInProgress; i++) {
             console.log(`Sending message ${i + 1}/${repeatCount}...`);
